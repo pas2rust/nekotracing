@@ -1,0 +1,33 @@
+[package]
+name = "nekotracing"
+version = "0.0.1"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/pas2rust/nekotracing"
+readme = "README.md"
+description = "."
+keywords = ["logging", "print", "colors", "tracing", "metrics"]
+categories = ["Debugging", "Asynchronous", "Profiling"]
+authors = ["pas2rust <pas2000@proton.me>"]
+homepage = "https://github.com/pas2rust/"
+documentation = "https://docs.rs/nekotracing"
+include = [
+    "src/**",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE*"
+]
+
+[lib]
+proc-macro = true
+
+[features]
+
+[dependencies]
+syn =  { version = "2", features = ["full"]}
+quote = '1'
+proc-macro2 =  '1'
+mokuya = "0"
+chrono = { version = "0"} 
+colorful = { version = "0"}
+tokio = { version = "1", features = ["fs", "io-util", "macros", "rt-multi-thread"]}
