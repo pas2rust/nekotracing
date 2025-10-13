@@ -10,7 +10,85 @@
 ![Crates.io downloads](https://img.shields.io/crates/d/nekotracing.svg)
 ![GitHub last commit](https://img.shields.io/github/last-commit/pas2rust/nekotracing?color=ff69b4&label=update&logo=git&style=flat&logoColor=white)
 
+## What it is and What it Does
+
+**`nekotracing`** is a **Rust** 🦀 **crate** that provides a minimalist solution for **instrumenting** synchronous functions and `async fn` using a single **attribute macro**: `#[nekotrancing]`.
+
+Its primary goal is to generate **execution traces** that record the flow and *timing* of specific instrumented functions.
+
+### 📝 Trace Destination: `tracing.txt`
+
+The central feature of `nekotracing` is that it **appends** these traces, formatted for easy human and machine parsing, to a file named **`tracing.txt`**, which is created in the **root directory of your project**.
+
+### 🔍 Captured Information
+
+For every marked function, the trace records the following data, as seen in the example:
+
+1.  **Timestamp:** The exact moment the function was executed.
+2.  **Location:** The file and line number of the code.
+3.  **Function Name:** (e.g., `fn sync_user`).
+4.  **Arguments:** The serialized values of the input parameters.
+5.  **Return Value:** The value or result returned by the function.
+6.  **Execution Time:** The total duration of the function call (e.g., `execution time=92.045µs`).
+
+### 🚀 Use Cases
+
+`nekotracing` is ideal for:
+
+* **Quick Profiling:** Measuring the performance of critical code sections, especially within unit tests.
+* **Lightweight Diagnostics:** Monitoring runtime behavior for **debugging** or **CI (Continuous Integration)** checks, without the overhead of a more complex tracing system.
+
 ---
+
+```rust
+use kenzu::Builder;
+use nekotracing::nekotrancing;
+
+#[derive(Debug, Builder, Clone)]
+pub struct User {
+    id: u128,
+    name: String,
+    age: u8,
+}
+
+impl User {
+    #[nekotrancing]
+    fn sync_user(self) -> Result<Self, String> {
+        Ok(self
+            .name(UserName::new("sync user")?)
+            .age(UserAge::new(18)?)
+            .id(UserId::new(0)?))
+    }
+    #[nekotrancing]
+    async fn async_user(self) -> Result<Self, String> {
+        Ok(self
+            .name(UserName::new("async user")?)
+            .age(UserAge::new(19)?)
+            .id(UserId::new(1)?))
+    }
+}
+
+#[test]
+fn sync_user() -> Result<(), String> {
+    User::new().sync_user()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn async_user() -> Result<(), String> {
+    User::new().async_user().await?;
+    Ok(())
+}
+
+```
+### Example Output (`tracing.txt`)
+
+```text
+
+(2025-10-12 22:13:31.378237998 -03:00 tests/user.rs 12:5)␞fn sync_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 0, name: \"sync user\", age: 18 })"␞execution time=92.045µs
+(2025-10-12 22:13:31.378237974 -03:00 tests/user.rs 19:5)␞async fn async_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 1, name: \"async user\", age: 19 })"␞execution time=88.799µs
+
+```
 
 <h2 align="center">
   <strong>❤️ Donate</strong>
