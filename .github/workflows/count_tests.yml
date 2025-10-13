@@ -37,7 +37,7 @@ jobs:
         run: |
           pasops tests-badges \
             --user pas2rust \
-            --badge-name nekoprint-tests.svg \
+            --badge-name nekotracing-tests.svg \
             --label tests \
             --color success \
             --logo testcafe \
