@@ -16,9 +16,9 @@
 
 Its primary goal is to generate **execution traces** that record the flow and *timing* of specific instrumented functions.
 
-### 📝 Trace Destination: `tracing.txt`
+### 📝 Trace Destination: `tracing/`
 
-The central feature of `nekotracing` is that it **appends** these traces, formatted for easy human and machine parsing, to a file named **`tracing.txt`**, which is created in the **root directory of your project**.
+The central feature of `nekotracing` is that it **appends** these traces, formatted for easy human and machine parsing, to a file named **`tracing/`**, which is created in the **root directory of your project**.
 
 ### 🔍 Captured Information
 
@@ -42,7 +42,7 @@ For every marked function, the trace records the following data, as seen in the 
 
 ```rust
 use kenzu::Builder;
-use nekotracing::nekotrancing;
+use nekotracing::nekotracing;
 
 #[derive(Debug, Builder, Clone)]
 pub struct User {
@@ -52,14 +52,14 @@ pub struct User {
 }
 
 impl User {
-    #[nekotrancing]
+    #[nekotracing]
     fn sync_user(self) -> Result<Self, String> {
         Ok(self
             .name(UserName::new("sync user")?)
             .age(UserAge::new(18)?)
             .id(UserId::new(0)?))
     }
-    #[nekotrancing]
+    #[nekotracing]
     async fn async_user(self) -> Result<Self, String> {
         Ok(self
             .name(UserName::new("async user")?)
@@ -79,15 +79,11 @@ async fn async_user() -> Result<(), String> {
     User::new().async_user().await?;
     Ok(())
 }
-
 ```
-### Example Output (`tracing.txt`)
+### Example Output (`tracing/2025-10-17T01-25-28.832894520-03-00@tests__user.rs-12-5.txt`)
 
 ```text
-
-(2025-10-12 22:13:31.378237998 -03:00 tests/user.rs 12:5)␞fn sync_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 0, name: \"sync user\", age: 18 })"␞execution time=92.045µs
-(2025-10-12 22:13:31.378237974 -03:00 tests/user.rs 19:5)␞async fn async_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 1, name: \"async user\", age: 19 })"␞execution time=88.799µs
-
+fn sync_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 0, name: \"sync user\", age: 18 })"␞execution time=73.951µs
 ```
 
 <h2 align="center">

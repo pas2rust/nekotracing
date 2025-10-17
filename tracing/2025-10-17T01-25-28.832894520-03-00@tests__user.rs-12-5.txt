@@ -1,0 +1,1 @@
+fn sync_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 0, name: \"sync user\", age: 18 })"␞execution time=34.991µs

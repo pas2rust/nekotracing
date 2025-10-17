@@ -1,0 +1,1 @@
+async fn async_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 1, name: \"async user\", age: 19 })"␞execution time=54.408µs

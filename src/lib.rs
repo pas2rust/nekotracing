@@ -11,7 +11,6 @@ pub fn nekotracing(_args: TokenStream, input: TokenStream) -> TokenStream {
     let block = &func.block;
     let ident = &sig.ident;
     let is_async = sig.asyncness.is_some();
-    //let first_arg_is_self = matches!(sig.inputs.first(), Some(FnArg::Receiver(_)));
 
     let inferred_return_type = match &sig.output {
         ReturnType::Type(_, ty) => quote! { #ty },
@@ -23,7 +22,7 @@ pub fn nekotracing(_args: TokenStream, input: TokenStream) -> TokenStream {
             let pat = &pat_type.pat;
             quote! { ::std::format!("{} = {:?}", ::std::stringify!(#pat), #pat) }
         }
-        FnArg::Receiver(_) => quote! { ::std::format!("self = {self:?}") },
+        FnArg::Receiver(_) => quote! { ::std::format!("self = {:?}", self) },
     });
 
     let args_declaration = quote! {
@@ -35,11 +34,7 @@ pub fn nekotracing(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     let tracing_log = quote! {
         let log_result = ::std::format!("{:?}", __res);
-        let log = ::std::format!("({} {} {}:{})\u{241E}{} {}\u{241E}({}) -> {:?}\u{241E}execution time={:?}",
-            ::chrono::Local::now(),
-            ::std::file!(),
-            ::std::line!(),
-            ::std::column!(),
+        let log = ::std::format!("{} {}\u{241E}({}) -> {:?}\u{241E}execution time={:?}",
             if #is_async { "async fn" } else { "fn" },
             ::std::stringify!(#ident),
             args,
@@ -51,21 +46,28 @@ pub fn nekotracing(_args: TokenStream, input: TokenStream) -> TokenStream {
     let sync_file_writing_logic = quote! {
         use ::std::io::Write;
 
-        let path = "tracing.txt";
+        if let Err(e) = ::std::fs::create_dir_all("tracing") {
+            ::std::eprintln!("Error creating tracing directory: {e}");
+        }
+
+        let ts = ::chrono::Local::now().to_rfc3339();
+        let ts_sanitized = ts.replace(":", "-");
+        let file_sanitized = ::std::file!().replace("/", "__");
+        let filename = ::std::format!("tracing/{}@{}-{}-{}.txt", ts_sanitized, file_sanitized, ::std::line!(), ::std::column!());
 
         match ::std::fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(path)
+            .open(&filename)
         {
             Ok(mut file) => {
-                if let Err(e) = writeln!(file, "{log}") {
-                    ::std::eprintln!("Error writing log to file '{path}': {e}");
+                if let Err(e) = writeln!(file, "{}", log) {
+                    ::std::eprintln!("Error writing log to file '{filename}': {e}");
                     ::std::eprintln!("{log}");
                 }
             }
             Err(e) => {
-                ::std::eprintln!("Error opening/creating log file '{path}': {e}");
+                ::std::eprintln!("Error opening/creating log file '{filename}': {e}");
                 ::std::eprintln!("{log}");
             }
         }
@@ -73,24 +75,31 @@ pub fn nekotracing(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     let async_file_writing_logic = quote! {
         use ::tokio::io::AsyncWriteExt;
-        use ::tokio::fs::OpenOptions;
 
-        let path = "tracing.txt";
-        let log_line = ::std::format!("{log}\n");
+        if let Err(e) = ::tokio::fs::create_dir_all("tracing").await {
+            ::std::eprintln!("Error creating tracing directory (async): {e}");
+        }
 
-        match OpenOptions::new()
+        let ts = ::chrono::Local::now().to_rfc3339();
+        let ts_sanitized = ts.replace(":", "-");
+        let file_sanitized = ::std::file!().replace("/", "__");
+        let filename = ::std::format!("tracing/{}@{}-{}-{}.txt", ts_sanitized, file_sanitized, ::std::line!(), ::std::column!());
+
+        let log_line = ::std::format!("{}\n", log);
+
+        match ::tokio::fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(path)
+            .open(&filename)
             .await
         {
             Ok(mut file) => {
                 if let Err(e) = file.write_all(log_line.as_bytes()).await {
-                    ::std::eprintln!("Error writing log to file '{path}' (async fallback): {e}");
+                    ::std::eprintln!("Error writing log to file '{filename}' (async): {e}");
                 }
             }
             Err(e) => {
-                ::std::eprintln!("Error opening/creating log file '{path}' (async fallback): {e}");
+                ::std::eprintln!("Error opening/creating log file '{filename}' (async): {e}");
             }
         }
     };
@@ -104,7 +113,7 @@ pub fn nekotracing(_args: TokenStream, input: TokenStream) -> TokenStream {
 
                 #args_declaration
 
-                let __res: #inferred_return_type = async move #block.await;
+                let __res: #inferred_return_type = (async move #block).await;
 
                 #tracing_log
                 #async_file_writing_logic;
