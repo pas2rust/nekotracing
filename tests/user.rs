@@ -1,5 +1,5 @@
 use kenzu::Builder;
-use nekotracing::nekotrancing;
+use nekotracing::nekotracing;
 
 #[derive(Debug, Builder, Clone)]
 pub struct User {
@@ -9,14 +9,14 @@ pub struct User {
 }
 
 impl User {
-    #[nekotrancing]
+    #[nekotracing]
     fn sync_user(self) -> Result<Self, String> {
         Ok(self
             .name(UserName::new("sync user")?)
             .age(UserAge::new(18)?)
             .id(UserId::new(0)?))
     }
-    #[nekotrancing]
+    #[nekotracing]
     async fn async_user(self) -> Result<Self, String> {
         Ok(self
             .name(UserName::new("async user")?)

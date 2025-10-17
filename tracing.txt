@@ -48,3 +48,5 @@
 (2025-10-12 22:53:39.765335472 -03:00 tests/user.rs 19:5)␞async fn async_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 1, name: \"async user\", age: 19 })"␞execution time=126.966µs
 (2025-10-12 22:53:42.339654348 -03:00 tests/user.rs 19:5)␞async fn async_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 1, name: \"async user\", age: 19 })"␞execution time=94.174µs
 (2025-10-12 22:53:42.340420903 -03:00 tests/user.rs 12:5)␞fn sync_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 0, name: \"sync user\", age: 18 })"␞execution time=113.755µs
+(2025-10-17 00:21:45.623080889 -03:00 tests/user.rs 19:5)␞async fn async_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 1, name: \"async user\", age: 19 })"␞execution time=197.401µs
+(2025-10-17 00:21:45.624417964 -03:00 tests/user.rs 12:5)␞fn sync_user␞(self = User { id: 0, name: "", age: 0 }) -> "Ok(User { id: 0, name: \"sync user\", age: 18 })"␞execution time=195.412µs

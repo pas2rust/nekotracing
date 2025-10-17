@@ -3,7 +3,7 @@ use quote::quote;
 use syn::{FnArg, ItemFn, ReturnType, parse_macro_input};
 
 #[proc_macro_attribute]
-pub fn nekotrancing(_args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn nekotracing(_args: TokenStream, input: TokenStream) -> TokenStream {
     let func = parse_macro_input!(input as ItemFn);
     let vis = &func.vis;
     let sig = &func.sig;
